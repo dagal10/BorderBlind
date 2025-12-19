@@ -541,6 +541,7 @@ class BorderBlindGame {
     // Graph coloring algorithm to ensure adjacent countries have different colors
     // Uses DSatur algorithm - colors vertices by saturation degree (most constrained first)
     // Treats missing + absorbing countries as a merged entity for coloring
+    // Also considers oceanNeighbors - countries visually close across water
     assignColorsToRegion() {
         // Color palette - 6 distinct, visually different colors (4 is minimum for maps)
         const colorPalette = [
@@ -558,7 +559,7 @@ class BorderBlindGame {
         // Get all countries EXCEPT the missing one (it will share color with absorbing)
         const countries = Object.keys(this.currentRegion.countries).filter(c => c !== missingName);
         
-        // Build adjacency list
+        // Build adjacency list (includes both land and ocean neighbors)
         const adj = {};
         for (const c of countries) {
             adj[c] = [];
@@ -566,8 +567,26 @@ class BorderBlindGame {
         
         for (const country of countries) {
             const countryData = this.currentRegion.countries[country];
-            const neighbors = countryData.adjacent || [];
-            for (const neighbor of neighbors) {
+            
+            // Add land-adjacent neighbors
+            const landNeighbors = countryData.adjacent || [];
+            for (const neighbor of landNeighbors) {
+                // Skip the missing country - its adjacencies are merged into absorbing
+                if (neighbor === missingName) continue;
+                
+                if (countries.includes(neighbor)) {
+                    if (!adj[country].includes(neighbor)) {
+                        adj[country].push(neighbor);
+                    }
+                    if (!adj[neighbor].includes(country)) {
+                        adj[neighbor].push(country);
+                    }
+                }
+            }
+            
+            // Add ocean neighbors (countries visually close across water)
+            const oceanNeighbors = countryData.oceanNeighbors || [];
+            for (const neighbor of oceanNeighbors) {
                 // Skip the missing country - its adjacencies are merged into absorbing
                 if (neighbor === missingName) continue;
                 
@@ -585,8 +604,28 @@ class BorderBlindGame {
         // CRITICAL: Merge missing country's neighbors into absorbing country's neighbors
         // The absorbing country must avoid colors of BOTH its own neighbors AND the missing country's neighbors
         const missingData = this.currentRegion.countries[missingName];
-        const missingNeighbors = missingData.adjacent || [];
-        for (const neighbor of missingNeighbors) {
+        
+        // Merge land neighbors
+        const missingLandNeighbors = missingData.adjacent || [];
+        for (const neighbor of missingLandNeighbors) {
+            // Skip the absorbing country itself and the missing country
+            if (neighbor === absorbingName || neighbor === missingName) continue;
+            
+            if (countries.includes(neighbor)) {
+                // Add this as a neighbor of the absorbing country
+                if (!adj[absorbingName].includes(neighbor)) {
+                    adj[absorbingName].push(neighbor);
+                }
+                // Also add absorbing as neighbor of this country
+                if (!adj[neighbor].includes(absorbingName)) {
+                    adj[neighbor].push(absorbingName);
+                }
+            }
+        }
+        
+        // Merge ocean neighbors from missing country
+        const missingOceanNeighbors = missingData.oceanNeighbors || [];
+        for (const neighbor of missingOceanNeighbors) {
             // Skip the absorbing country itself and the missing country
             if (neighbor === absorbingName || neighbor === missingName) continue;
             
