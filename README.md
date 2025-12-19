@@ -4,7 +4,7 @@ A fast-paced geography guessing game where you identify locations on the map as 
 
 ## 🎮 Play Now
 
-[**Play SpeedyGeoGuesser**](https://yourusername.github.io/SpeedyGeoGuesser/)
+[**Play SpeedyGeoGuesser**](https://dagal10.github.io/SpeedyGeoGuesser/)
 
 ## 🎯 How to Play
 
