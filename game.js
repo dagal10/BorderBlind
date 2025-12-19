@@ -123,6 +123,7 @@ class BorderBlindGame {
     
     nextRound() {
         this.hideFeedback();
+        this.clearCountryLabels();
         this.currentRound++;
         
         if (this.currentRound > this.totalRounds) {
@@ -137,6 +138,17 @@ class BorderBlindGame {
         this.initMap();
         
         this.setupRound();
+    }
+    
+    clearCountryLabels() {
+        if (this.countryLabels) {
+            this.countryLabels.forEach(label => {
+                if (this.map) {
+                    this.map.removeLayer(label);
+                }
+            });
+            this.countryLabels = [];
+        }
     }
     
     setupRound() {
@@ -810,6 +822,63 @@ class BorderBlindGame {
             if (element) {
                 element.classList.add('absorbed-country-overlay');
             }
+        });
+        
+        // Add country name labels on all countries
+        this.addCountryLabels();
+    }
+    
+    addCountryLabels() {
+        // Store label markers to remove them later if needed
+        if (!this.countryLabels) {
+            this.countryLabels = [];
+        }
+        
+        // Clear existing labels
+        this.countryLabels.forEach(label => this.map.removeLayer(label));
+        this.countryLabels = [];
+        
+        const nameMapping = this.createNameMapping();
+        const regionCountryNames = Object.keys(this.currentRegion.countries);
+        
+        // Add labels to all countries in the region
+        this.geoJsonData.features.forEach(feature => {
+            const geoName = feature.properties.ADMIN || feature.properties.name;
+            const mappedName = nameMapping[geoName];
+            
+            if (!mappedName || !regionCountryNames.includes(mappedName)) return;
+            
+            // Get the centroid of the country for label placement
+            let centroid;
+            try {
+                // Use Turf.js to get the true centroid (geometric center)
+                const centroidPoint = turf.centroid(feature);
+                centroid = centroidPoint.geometry.coordinates;
+            } catch (e) {
+                // Fallback: use center of bounding box
+                const bbox = turf.bbox(feature);
+                centroid = [(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2];
+            }
+            
+            // Determine if this is the missing country (needs special styling)
+            const isMissing = mappedName === this.missingCountry.name;
+            
+            // Create a div icon with the country name
+            const labelClass = isMissing ? 'country-label country-label-missing' : 'country-label';
+            const divIcon = L.divIcon({
+                className: labelClass,
+                html: `<span>${mappedName}</span>`,
+                iconSize: null,
+                iconAnchor: [0, 0]
+            });
+            
+            // Create marker at centroid (note: Leaflet uses [lat, lng], GeoJSON uses [lng, lat])
+            const marker = L.marker([centroid[1], centroid[0]], {
+                icon: divIcon,
+                interactive: false
+            }).addTo(this.map);
+            
+            this.countryLabels.push(marker);
         });
     }
     
