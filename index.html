@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Border Blind - Spot the Missing Country</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <div class="title-section">
+                <h1 class="game-title">Border<span class="accent">Blind</span></h1>
+                <p class="tagline">One country vanished. Can you spot which one?</p>
+            </div>
+            <div class="start-content">
+                <div class="how-to-play">
+                    <h3>How to Play</h3>
+                    <ul>
+                        <li><span class="step-num">1</span> A map region appears with one country absorbed into its neighbor</li>
+                        <li><span class="step-num">2</span> Click on the country you think is missing</li>
+                        <li><span class="step-num">3</span> You get ONE guess per round</li>
+                        <li><span class="step-num">4</span> Complete 10 rounds for your final score</li>
+                    </ul>
+                </div>
+                <button id="start-btn" class="btn-primary">
+                    <span>Start Game</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="decorative-globe"></div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <header class="game-header">
+                <div class="round-info">
+                    <span class="label">Round</span>
+                    <span id="round-number" class="value">1</span>
+                    <span class="of">/10</span>
+                </div>
+                <div class="region-name" id="region-name">Europe</div>
+                <div class="score-info">
+                    <span class="label">Score</span>
+                    <span id="score" class="value">0</span>
+                </div>
+            </header>
+
+            <main class="game-main">
+                <div class="map-container" id="map-container">
+                    <div id="map"></div>
+                    <div class="loading-overlay" id="loading-overlay">
+                        <div class="loader"></div>
+                        <p>Loading map...</p>
+                    </div>
+                </div>
+                <div class="hint-text" id="hint-text">Click on the country that's missing!</div>
+            </main>
+
+            <div class="feedback-overlay" id="feedback-overlay">
+                <div class="feedback-content">
+                    <div class="feedback-icon" id="feedback-icon"></div>
+                    <h2 id="feedback-title"></h2>
+                    <p id="feedback-message"></p>
+                    <button id="next-btn" class="btn-secondary">Next Round</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="screen">
+            <div class="end-content">
+                <h2 class="end-title">Game Complete!</h2>
+                <div class="final-score">
+                    <span class="score-label">Your Score</span>
+                    <span id="final-score" class="score-value">0</span>
+                    <span class="score-max">/ 10</span>
+                </div>
+                <div class="score-message" id="score-message"></div>
+                <div class="stats">
+                    <div class="stat">
+                        <span class="stat-value" id="correct-count">0</span>
+                        <span class="stat-label">Correct</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="wrong-count">0</span>
+                        <span class="stat-label">Wrong</span>
+                    </div>
+                </div>
+                <button id="play-again-btn" class="btn-primary">
+                    <span>Play Again</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 4v6h6M23 20v-6h-6"/>
+                        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <script src="regions.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

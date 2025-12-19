@@ -1,0 +1,216 @@
+// Border Blind - Region Definitions
+// Real geographic regions with country lists and adjacency data
+// Country names MUST match the GeoJSON ADMIN property
+
+const REGIONS = {
+    europe: {
+        name: "Europe",
+        bounds: [[34, -12], [72, 45]],
+        center: [50, 15],
+        zoom: 4,
+        countries: {
+            "Portugal": { color: "#3b82f6", adjacent: ["Spain"] },
+            "Spain": { color: "#ef4444", adjacent: ["Portugal", "France", "Andorra"] },
+            "Andorra": { color: "#f59e0b", adjacent: ["Spain", "France"] },
+            "France": { color: "#8b5cf6", adjacent: ["Spain", "Andorra", "Belgium", "Luxembourg", "Germany", "Switzerland", "Italy", "Monaco"] },
+            "Monaco": { color: "#ec4899", adjacent: ["France"] },
+            "Belgium": { color: "#10b981", adjacent: ["France", "Luxembourg", "Germany", "Netherlands"] },
+            "Netherlands": { color: "#f97316", adjacent: ["Belgium", "Germany"] },
+            "Luxembourg": { color: "#06b6d4", adjacent: ["France", "Belgium", "Germany"] },
+            "Germany": { color: "#eab308", adjacent: ["Netherlands", "Belgium", "Luxembourg", "France", "Switzerland", "Austria", "Czech Republic", "Poland", "Denmark"] },
+            "Switzerland": { color: "#dc2626", adjacent: ["France", "Germany", "Austria", "Liechtenstein", "Italy"] },
+            "Liechtenstein": { color: "#2563eb", adjacent: ["Switzerland", "Austria"] },
+            "Austria": { color: "#7c3aed", adjacent: ["Germany", "Czech Republic", "Slovakia", "Hungary", "Slovenia", "Italy", "Switzerland", "Liechtenstein"] },
+            "Italy": { color: "#16a34a", adjacent: ["France", "Switzerland", "Austria", "Slovenia", "San Marino", "Vatican"] },
+            "San Marino": { color: "#0ea5e9", adjacent: ["Italy"] },
+            "Slovenia": { color: "#14b8a6", adjacent: ["Italy", "Austria", "Hungary", "Croatia"] },
+            "Croatia": { color: "#e11d48", adjacent: ["Slovenia", "Hungary", "Serbia", "Bosnia and Herzegovina", "Montenegro"] },
+            "Bosnia and Herzegovina": { color: "#1d4ed8", adjacent: ["Croatia", "Serbia", "Montenegro"] },
+            "Montenegro": { color: "#b45309", adjacent: ["Croatia", "Bosnia and Herzegovina", "Serbia", "Albania", "Kosovo"] },
+            "Serbia": { color: "#9333ea", adjacent: ["Croatia", "Bosnia and Herzegovina", "Montenegro", "Albania", "Kosovo", "North Macedonia", "Bulgaria", "Romania", "Hungary"] },
+            "Kosovo": { color: "#0891b2", adjacent: ["Serbia", "Montenegro", "Albania", "North Macedonia"] },
+            "Albania": { color: "#dc2626", adjacent: ["Montenegro", "Kosovo", "North Macedonia", "Greece"] },
+            "North Macedonia": { color: "#ca8a04", adjacent: ["Serbia", "Kosovo", "Albania", "Greece", "Bulgaria"] },
+            "Greece": { color: "#2563eb", adjacent: ["Albania", "North Macedonia", "Bulgaria", "Turkey"] },
+            "Bulgaria": { color: "#15803d", adjacent: ["Serbia", "North Macedonia", "Greece", "Turkey", "Romania"] },
+            "Romania": { color: "#0369a1", adjacent: ["Hungary", "Serbia", "Bulgaria", "Ukraine", "Moldova"] },
+            "Hungary": { color: "#be123c", adjacent: ["Austria", "Slovakia", "Ukraine", "Romania", "Serbia", "Croatia", "Slovenia"] },
+            "Slovakia": { color: "#1e40af", adjacent: ["Czech Republic", "Poland", "Ukraine", "Hungary", "Austria"] },
+            "Czech Republic": { color: "#991b1b", adjacent: ["Germany", "Poland", "Slovakia", "Austria"] },
+            "Poland": { color: "#c2410c", adjacent: ["Germany", "Czech Republic", "Slovakia", "Ukraine", "Belarus", "Lithuania", "Russia"] },
+            "Denmark": { color: "#db2777", adjacent: ["Germany"] },
+            "Sweden": { color: "#0284c7", adjacent: ["Norway", "Finland"] },
+            "Norway": { color: "#b91c1c", adjacent: ["Sweden", "Finland", "Russia"] },
+            "Finland": { color: "#1d4ed8", adjacent: ["Sweden", "Norway", "Russia"] },
+            "Estonia": { color: "#0891b2", adjacent: ["Latvia", "Russia"] },
+            "Latvia": { color: "#7c2d12", adjacent: ["Estonia", "Lithuania", "Belarus", "Russia"] },
+            "Lithuania": { color: "#166534", adjacent: ["Latvia", "Belarus", "Poland", "Russia"] },
+            "Belarus": { color: "#dc2626", adjacent: ["Lithuania", "Latvia", "Russia", "Ukraine", "Poland"] },
+            "Ukraine": { color: "#fbbf24", adjacent: ["Belarus", "Russia", "Moldova", "Romania", "Hungary", "Slovakia", "Poland"] },
+            "Moldova": { color: "#7c3aed", adjacent: ["Romania", "Ukraine"] },
+            "Ireland": { color: "#16a34a", adjacent: ["United Kingdom"] },
+            "United Kingdom": { color: "#1e40af", adjacent: ["Ireland"] }
+        }
+    },
+
+    southAmerica: {
+        name: "South America",
+        bounds: [[-56, -82], [13, -34]],
+        center: [-15, -60],
+        zoom: 3,
+        countries: {
+            "Colombia": { color: "#fbbf24", adjacent: ["Venezuela", "Brazil", "Peru", "Ecuador", "Panama"] },
+            "Venezuela": { color: "#dc2626", adjacent: ["Colombia", "Brazil", "Guyana"] },
+            "Guyana": { color: "#16a34a", adjacent: ["Venezuela", "Brazil", "Suriname"] },
+            "Suriname": { color: "#7c3aed", adjacent: ["Guyana", "Brazil"] },
+            "Ecuador": { color: "#eab308", adjacent: ["Colombia", "Peru"] },
+            "Peru": { color: "#ef4444", adjacent: ["Ecuador", "Colombia", "Brazil", "Bolivia", "Chile"] },
+            "Brazil": { color: "#22c55e", adjacent: ["Colombia", "Venezuela", "Guyana", "Suriname", "Peru", "Bolivia", "Paraguay", "Argentina", "Uruguay"] },
+            "Bolivia": { color: "#f59e0b", adjacent: ["Peru", "Brazil", "Paraguay", "Argentina", "Chile"] },
+            "Paraguay": { color: "#3b82f6", adjacent: ["Bolivia", "Brazil", "Argentina"] },
+            "Chile": { color: "#dc2626", adjacent: ["Peru", "Bolivia", "Argentina"] },
+            "Argentina": { color: "#60a5fa", adjacent: ["Chile", "Bolivia", "Paraguay", "Brazil", "Uruguay"] },
+            "Uruguay": { color: "#8b5cf6", adjacent: ["Brazil", "Argentina"] }
+        }
+    },
+
+    asia: {
+        name: "East & Southeast Asia",
+        bounds: [[0, 73], [55, 145]],
+        center: [30, 110],
+        zoom: 3,
+        countries: {
+            "Mongolia": { color: "#0ea5e9", adjacent: ["Russia", "China"] },
+            "China": { color: "#ef4444", adjacent: ["Mongolia", "Russia", "North Korea", "Vietnam", "Laos", "Myanmar", "India", "Nepal", "Bhutan", "Pakistan", "Afghanistan", "Tajikistan", "Kyrgyzstan", "Kazakhstan"] },
+            "North Korea": { color: "#dc2626", adjacent: ["China", "South Korea", "Russia"] },
+            "South Korea": { color: "#3b82f6", adjacent: ["North Korea"] },
+            "Japan": { color: "#f43f5e", adjacent: [] },
+            "Taiwan": { color: "#22c55e", adjacent: [] },
+            "Vietnam": { color: "#dc2626", adjacent: ["China", "Laos", "Cambodia"] },
+            "Laos": { color: "#0ea5e9", adjacent: ["China", "Vietnam", "Cambodia", "Thailand", "Myanmar"] },
+            "Cambodia": { color: "#1e40af", adjacent: ["Vietnam", "Laos", "Thailand"] },
+            "Thailand": { color: "#7c3aed", adjacent: ["Myanmar", "Laos", "Cambodia", "Malaysia"] },
+            "Myanmar": { color: "#16a34a", adjacent: ["China", "Laos", "Thailand", "India", "Bangladesh"] },
+            "Malaysia": { color: "#eab308", adjacent: ["Thailand", "Brunei", "Indonesia"] },
+            "Brunei": { color: "#fbbf24", adjacent: ["Malaysia"] },
+            "Philippines": { color: "#0891b2", adjacent: [] },
+            "Indonesia": { color: "#b91c1c", adjacent: ["Malaysia", "Papua New Guinea", "East Timor"] },
+            "Nepal": { color: "#dc2626", adjacent: ["China", "India"] },
+            "Bhutan": { color: "#f97316", adjacent: ["China", "India"] },
+            "Bangladesh": { color: "#16a34a", adjacent: ["India", "Myanmar"] },
+            "India": { color: "#f59e0b", adjacent: ["China", "Nepal", "Bhutan", "Bangladesh", "Myanmar", "Pakistan"] }
+        }
+    },
+
+    africa: {
+        name: "Africa",
+        bounds: [[-35, -18], [37, 52]],
+        center: [5, 20],
+        zoom: 3,
+        countries: {
+            "Morocco": { color: "#dc2626", adjacent: ["Algeria", "Western Sahara"] },
+            "Algeria": { color: "#16a34a", adjacent: ["Morocco", "Tunisia", "Libya", "Niger", "Mali", "Mauritania", "Western Sahara"] },
+            "Tunisia": { color: "#ef4444", adjacent: ["Algeria", "Libya"] },
+            "Libya": { color: "#1e3a8a", adjacent: ["Tunisia", "Algeria", "Niger", "Chad", "Sudan", "Egypt"] },
+            "Egypt": { color: "#fbbf24", adjacent: ["Libya", "Sudan", "Israel"] },
+            "Western Sahara": { color: "#94a3b8", adjacent: ["Morocco", "Algeria", "Mauritania"] },
+            "Mauritania": { color: "#0d9488", adjacent: ["Western Sahara", "Algeria", "Mali", "Senegal"] },
+            "Mali": { color: "#16a34a", adjacent: ["Algeria", "Mauritania", "Senegal", "Guinea", "Ivory Coast", "Burkina Faso", "Niger"] },
+            "Niger": { color: "#f97316", adjacent: ["Algeria", "Libya", "Chad", "Nigeria", "Benin", "Burkina Faso", "Mali"] },
+            "Chad": { color: "#1d4ed8", adjacent: ["Libya", "Sudan", "Central African Republic", "Cameroon", "Nigeria", "Niger"] },
+            "Sudan": { color: "#b91c1c", adjacent: ["Egypt", "Libya", "Chad", "Central African Republic", "South Sudan", "Ethiopia", "Eritrea"] },
+            "Senegal": { color: "#16a34a", adjacent: ["Mauritania", "Mali", "Guinea", "Guinea-Bissau", "The Gambia"] },
+            "The Gambia": { color: "#dc2626", adjacent: ["Senegal"] },
+            "Guinea-Bissau": { color: "#eab308", adjacent: ["Senegal", "Guinea"] },
+            "Guinea": { color: "#dc2626", adjacent: ["Senegal", "Mali", "Ivory Coast", "Liberia", "Sierra Leone", "Guinea-Bissau"] },
+            "Sierra Leone": { color: "#0ea5e9", adjacent: ["Guinea", "Liberia"] },
+            "Liberia": { color: "#1e40af", adjacent: ["Sierra Leone", "Guinea", "Ivory Coast"] },
+            "Ivory Coast": { color: "#f97316", adjacent: ["Mali", "Burkina Faso", "Ghana", "Liberia", "Guinea"] },
+            "Ghana": { color: "#fbbf24", adjacent: ["Burkina Faso", "Togo", "Ivory Coast"] },
+            "Togo": { color: "#16a34a", adjacent: ["Ghana", "Benin", "Burkina Faso"] },
+            "Benin": { color: "#eab308", adjacent: ["Togo", "Burkina Faso", "Niger", "Nigeria"] },
+            "Burkina Faso": { color: "#dc2626", adjacent: ["Mali", "Niger", "Benin", "Togo", "Ghana", "Ivory Coast"] },
+            "Nigeria": { color: "#16a34a", adjacent: ["Niger", "Chad", "Cameroon", "Benin"] },
+            "Cameroon": { color: "#16a34a", adjacent: ["Nigeria", "Chad", "Central African Republic", "Democratic Republic of the Congo", "Republic of the Congo", "Gabon", "Equatorial Guinea"] },
+            "Equatorial Guinea": { color: "#3b82f6", adjacent: ["Cameroon", "Gabon"] },
+            "Gabon": { color: "#0891b2", adjacent: ["Equatorial Guinea", "Cameroon", "Republic of the Congo"] },
+            "Republic of the Congo": { color: "#7c3aed", adjacent: ["Gabon", "Cameroon", "Central African Republic", "Democratic Republic of the Congo", "Angola"] },
+            "Central African Republic": { color: "#f59e0b", adjacent: ["Chad", "Sudan", "South Sudan", "Democratic Republic of the Congo", "Republic of the Congo", "Cameroon"] },
+            "South Sudan": { color: "#166534", adjacent: ["Sudan", "Ethiopia", "Kenya", "Uganda", "Democratic Republic of the Congo", "Central African Republic"] },
+            "Ethiopia": { color: "#16a34a", adjacent: ["Sudan", "South Sudan", "Kenya", "Somalia", "Djibouti", "Eritrea"] },
+            "Eritrea": { color: "#dc2626", adjacent: ["Sudan", "Ethiopia", "Djibouti"] },
+            "Djibouti": { color: "#0ea5e9", adjacent: ["Eritrea", "Ethiopia", "Somalia"] },
+            "Somalia": { color: "#eab308", adjacent: ["Ethiopia", "Djibouti", "Kenya"] },
+            "Kenya": { color: "#1e3a8a", adjacent: ["Ethiopia", "Somalia", "Tanzania", "Uganda", "South Sudan"] },
+            "Uganda": { color: "#fbbf24", adjacent: ["South Sudan", "Kenya", "Tanzania", "Rwanda", "Democratic Republic of the Congo"] },
+            "Rwanda": { color: "#0ea5e9", adjacent: ["Uganda", "Tanzania", "Burundi", "Democratic Republic of the Congo"] },
+            "Burundi": { color: "#dc2626", adjacent: ["Rwanda", "Tanzania", "Democratic Republic of the Congo"] },
+            "Tanzania": { color: "#22c55e", adjacent: ["Kenya", "Uganda", "Rwanda", "Burundi", "Democratic Republic of the Congo", "Zambia", "Malawi", "Mozambique"] },
+            "Democratic Republic of the Congo": { color: "#eab308", adjacent: ["Central African Republic", "South Sudan", "Uganda", "Rwanda", "Burundi", "Tanzania", "Zambia", "Angola", "Republic of the Congo"] },
+            "Angola": { color: "#dc2626", adjacent: ["Democratic Republic of the Congo", "Zambia", "Namibia", "Botswana", "Republic of the Congo"] },
+            "Zambia": { color: "#f97316", adjacent: ["Democratic Republic of the Congo", "Tanzania", "Malawi", "Mozambique", "Zimbabwe", "Botswana", "Namibia", "Angola"] },
+            "Malawi": { color: "#dc2626", adjacent: ["Tanzania", "Mozambique", "Zambia"] },
+            "Mozambique": { color: "#fbbf24", adjacent: ["Tanzania", "Malawi", "Zambia", "Zimbabwe", "South Africa", "Eswatini"] },
+            "Zimbabwe": { color: "#eab308", adjacent: ["Zambia", "Mozambique", "South Africa", "Botswana"] },
+            "Botswana": { color: "#0ea5e9", adjacent: ["Namibia", "Zambia", "Zimbabwe", "South Africa"] },
+            "Namibia": { color: "#1d4ed8", adjacent: ["Angola", "Zambia", "Botswana", "South Africa"] },
+            "South Africa": { color: "#16a34a", adjacent: ["Namibia", "Botswana", "Zimbabwe", "Mozambique", "Eswatini", "Lesotho"] },
+            "Lesotho": { color: "#3b82f6", adjacent: ["South Africa"] },
+            "Eswatini": { color: "#7c3aed", adjacent: ["South Africa", "Mozambique"] }
+        }
+    },
+
+    middleEast: {
+        name: "Middle East",
+        bounds: [[12, 24], [42, 64]],
+        center: [28, 45],
+        zoom: 4,
+        countries: {
+            "Turkey": { color: "#dc2626", adjacent: ["Greece", "Bulgaria", "Georgia", "Armenia", "Iran", "Iraq", "Syria"] },
+            "Syria": { color: "#16a34a", adjacent: ["Turkey", "Iraq", "Jordan", "Israel", "Lebanon"] },
+            "Lebanon": { color: "#ef4444", adjacent: ["Syria", "Israel"] },
+            "Israel": { color: "#3b82f6", adjacent: ["Lebanon", "Syria", "Jordan", "Egypt"] },
+            "Jordan": { color: "#f59e0b", adjacent: ["Syria", "Iraq", "Saudi Arabia", "Israel"] },
+            "Iraq": { color: "#1e3a8a", adjacent: ["Turkey", "Syria", "Jordan", "Saudi Arabia", "Kuwait", "Iran"] },
+            "Kuwait": { color: "#22c55e", adjacent: ["Iraq", "Saudi Arabia"] },
+            "Iran": { color: "#16a34a", adjacent: ["Turkey", "Iraq", "Armenia", "Azerbaijan", "Turkmenistan", "Afghanistan", "Pakistan"] },
+            "Saudi Arabia": { color: "#16a34a", adjacent: ["Jordan", "Iraq", "Kuwait", "Qatar", "United Arab Emirates", "Oman", "Yemen"] },
+            "Yemen": { color: "#dc2626", adjacent: ["Saudi Arabia", "Oman"] },
+            "Oman": { color: "#be123c", adjacent: ["Saudi Arabia", "United Arab Emirates", "Yemen"] },
+            "United Arab Emirates": { color: "#1e40af", adjacent: ["Saudi Arabia", "Oman", "Qatar"] },
+            "Qatar": { color: "#7c2d12", adjacent: ["Saudi Arabia", "United Arab Emirates"] },
+            "Bahrain": { color: "#dc2626", adjacent: ["Saudi Arabia"] },
+            "Georgia": { color: "#0ea5e9", adjacent: ["Russia", "Turkey", "Armenia", "Azerbaijan"] },
+            "Armenia": { color: "#f97316", adjacent: ["Georgia", "Turkey", "Iran", "Azerbaijan"] },
+            "Azerbaijan": { color: "#0891b2", adjacent: ["Georgia", "Armenia", "Iran", "Russia"] }
+        }
+    },
+
+    centralAmerica: {
+        name: "Central America & Caribbean",
+        bounds: [[7, -92], [24, -59]],
+        center: [17, -78],
+        zoom: 5,
+        countries: {
+            "Mexico": { color: "#16a34a", adjacent: ["United States of America", "Guatemala", "Belize"] },
+            "Guatemala": { color: "#3b82f6", adjacent: ["Mexico", "Belize", "Honduras", "El Salvador"] },
+            "Belize": { color: "#1e3a8a", adjacent: ["Mexico", "Guatemala"] },
+            "Honduras": { color: "#0ea5e9", adjacent: ["Guatemala", "El Salvador", "Nicaragua"] },
+            "El Salvador": { color: "#1d4ed8", adjacent: ["Guatemala", "Honduras"] },
+            "Nicaragua": { color: "#0369a1", adjacent: ["Honduras", "Costa Rica"] },
+            "Costa Rica": { color: "#dc2626", adjacent: ["Nicaragua", "Panama"] },
+            "Panama": { color: "#1e40af", adjacent: ["Costa Rica", "Colombia"] },
+            "Cuba": { color: "#dc2626", adjacent: [] },
+            "Jamaica": { color: "#22c55e", adjacent: [] },
+            "Haiti": { color: "#1e3a8a", adjacent: ["Dominican Republic"] },
+            "Dominican Republic": { color: "#dc2626", adjacent: ["Haiti"] },
+            "Puerto Rico": { color: "#3b82f6", adjacent: [] }
+        }
+    }
+};
+
+// GeoJSON URL - using Natural Earth data
+const GEOJSON_URL = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson';
+
+window.REGIONS = REGIONS;
+window.GEOJSON_URL = GEOJSON_URL;
