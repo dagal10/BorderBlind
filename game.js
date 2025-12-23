@@ -53,6 +53,9 @@ class BorderBlindGame {
             wrongCount: document.getElementById('wrong-count')
         };
         
+        // Store current overlay opacity
+        this.overlayOpacity = 0.2;
+        
         this.bindEvents();
         this.loadGeoJson();
     }
@@ -124,6 +127,23 @@ class BorderBlindGame {
     nextRound() {
         this.hideFeedback();
         this.clearCountryLabels();
+        
+        // Clean up opacity maintenance
+        if (this.opacityMaintenanceInterval) {
+            clearInterval(this.opacityMaintenanceInterval);
+            this.opacityMaintenanceInterval = null;
+        }
+        if (this.opacityMutationObserver) {
+            this.opacityMutationObserver.disconnect();
+            this.opacityMutationObserver = null;
+        }
+        if (this.mapMoveHandler && this.map) {
+            this.map.off('move', this.mapMoveHandler);
+            this.map.off('zoom', this.mapMoveHandler);
+            this.map.off('zoomend', this.mapMoveHandler);
+            this.mapMoveHandler = null;
+        }
+        
         this.currentRound++;
         
         if (this.currentRound > this.totalRounds) {
@@ -232,6 +252,7 @@ class BorderBlindGame {
         }
         this.countryLayers = {};
         this.absorbedLayer = null;
+        this.labeledTileLayer = null;
         
         // IMPORTANT: Reset all constraints BEFORE fitting to new bounds
         // Otherwise previous round's constraints prevent proper zoom/pan
@@ -800,6 +821,22 @@ class BorderBlindGame {
             this.map.removeLayer(this.answerOutlineShadow);
         }
         
+        // Add labeled tile layer to show country names from the map
+        // Remove existing tile layer if present
+        if (this.tileLayer) {
+            this.map.removeLayer(this.tileLayer);
+        }
+        
+        // Add a tile layer with labels (dark-gray has labels)
+        this.labeledTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 10, // Higher zoom to show more detail
+            maxNativeZoom: 10,
+            opacity: 0.6, // Slightly more opaque to see labels better
+            attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(this.map);
+        
+        // Don't change zoom or bounds - keep the current view
+        
         // Green for correct, pink/magenta for wrong - both stand out clearly
         const overlayColor = isCorrect ? '#22c55e' : '#ec4899';
         
@@ -807,7 +844,7 @@ class BorderBlindGame {
         this.answerOutlineLayer = L.geoJSON(this.absorbedFeature, {
             style: {
                 fillColor: overlayColor,
-                fillOpacity: 0.75,
+                fillOpacity: 0.2,
                 color: '#ffffff',
                 weight: 4,
                 opacity: 1
@@ -816,16 +853,155 @@ class BorderBlindGame {
         
         this.answerOutlineLayer.bringToFront();
         
-        // Add animation class for pulsing effect
+        // Mark overlay elements with a data attribute for easy finding
         this.answerOutlineLayer.eachLayer(subLayer => {
             const element = subLayer.getElement();
             if (element) {
-                element.classList.add('absorbed-country-overlay');
+                element.setAttribute('data-overlay-layer', 'true');
+                // Also mark child leaflet-interactive elements
+                const interactiveElements = element.classList.contains('leaflet-interactive') 
+                    ? [element] 
+                    : element.querySelectorAll('.leaflet-interactive');
+                interactiveElements.forEach(el => {
+                    el.setAttribute('data-overlay-layer', 'true');
+                });
             }
         });
         
-        // Add country name labels on all countries
-        this.addCountryLabels();
+        // Set up continuous opacity maintenance
+        this.setupOpacityMaintenance();
+    }
+    
+    setupOpacityMaintenance() {
+        // Remove any existing interval/observers
+        if (this.opacityMaintenanceInterval) {
+            clearInterval(this.opacityMaintenanceInterval);
+        }
+        if (this.opacityMutationObserver) {
+            this.opacityMutationObserver.disconnect();
+        }
+        if (this.mapMoveHandler) {
+            this.map.off('move', this.mapMoveHandler);
+            this.map.off('zoom', this.mapMoveHandler);
+            this.map.off('zoomend', this.mapMoveHandler);
+        }
+        
+        // Re-apply opacity whenever map moves or zooms
+        this.mapMoveHandler = () => {
+            // Small delay to let Leaflet finish rendering
+            setTimeout(() => {
+                this.updateOverlayOpacity();
+            }, 50);
+        };
+        
+        this.map.on('move', this.mapMoveHandler);
+        this.map.on('zoom', this.mapMoveHandler);
+        this.map.on('zoomend', this.mapMoveHandler);
+        
+        // Also use MutationObserver to watch for style changes on overlay elements
+        if (this.map && this.map.getContainer) {
+            const mapContainer = this.map.getContainer();
+            this.opacityMutationObserver = new MutationObserver((mutations) => {
+                let shouldUpdate = false;
+                mutations.forEach(mutation => {
+                    if (mutation.type === 'attributes' && 
+                        (mutation.attributeName === 'style' || mutation.attributeName === 'fill-opacity')) {
+                        const target = mutation.target;
+                        if (target.hasAttribute && target.hasAttribute('data-overlay-layer')) {
+                            shouldUpdate = true;
+                        }
+                    }
+                });
+                if (shouldUpdate) {
+                    // Debounce updates
+                    clearTimeout(this.opacityUpdateTimeout);
+                    this.opacityUpdateTimeout = setTimeout(() => {
+                        this.updateOverlayOpacity();
+                    }, 10);
+                }
+            });
+            
+            // Observe the overlay pane for changes
+            const overlayPane = mapContainer.querySelector('.leaflet-overlay-pane');
+            if (overlayPane) {
+                this.opacityMutationObserver.observe(overlayPane, {
+                    attributes: true,
+                    attributeFilter: ['style', 'fill-opacity'],
+                    subtree: true
+                });
+            }
+        }
+        
+        // Also set up a periodic check as a fallback (every 100ms)
+        this.opacityMaintenanceInterval = setInterval(() => {
+            if (this.answerOutlineLayer && this.hasGuessed) {
+                this.updateOverlayOpacity();
+            }
+        }, 100);
+    }
+    
+    updateOverlayOpacity() {
+        // Update the overlay opacity if it exists
+        if (!this.answerOutlineLayer) {
+            return;
+        }
+        
+        // Update via Leaflet's setStyle first
+        this.answerOutlineLayer.setStyle({
+            fillOpacity: this.overlayOpacity
+        });
+        
+        // Force Leaflet to re-apply styles on each sub-layer and access _path directly
+        let foundElements = 0;
+        this.answerOutlineLayer.eachLayer(subLayer => {
+            subLayer.setStyle({
+                fillOpacity: this.overlayOpacity
+            });
+            
+            // Access Leaflet's internal _path element directly (most reliable)
+            if (subLayer._path) {
+                const path = subLayer._path;
+                path.setAttribute('fill-opacity', this.overlayOpacity);
+                path.style.setProperty('fill-opacity', this.overlayOpacity, 'important');
+                path.style.animation = 'none';
+                foundElements++;
+            }
+            
+            // Also try _renderer if it exists
+            if (subLayer._renderer && subLayer._renderer._container) {
+                const paths = subLayer._renderer._container.querySelectorAll('path');
+                paths.forEach(p => {
+                    p.setAttribute('fill-opacity', this.overlayOpacity);
+                    p.style.setProperty('fill-opacity', this.overlayOpacity, 'important');
+                });
+            }
+        });
+        
+        // Force a redraw
+        if (this.answerOutlineLayer.redraw) {
+            this.answerOutlineLayer.redraw();
+        }
+        
+        // Also find and update elements by data attribute
+        if (this.map && this.map.getContainer) {
+            const mapContainer = this.map.getContainer();
+            const overlayPaths = mapContainer.querySelectorAll('.leaflet-interactive[data-overlay-layer="true"]');
+            
+            overlayPaths.forEach(el => {
+                // Remove any animation
+                el.style.animation = 'none';
+                el.style.setProperty('animation', 'none', 'important');
+                
+                // Set fill-opacity with important flag
+                el.setAttribute('fill-opacity', this.overlayOpacity);
+                el.style.setProperty('fill-opacity', this.overlayOpacity, 'important');
+                
+                // Also try setting opacity (some SVG renderers use this)
+                el.style.setProperty('opacity', '1', 'important'); // Keep opacity at 1, use fill-opacity for transparency
+                
+                foundElements++;
+            });
+        }
     }
     
     addCountryLabels() {
@@ -933,3 +1109,4 @@ class BorderBlindGame {
 document.addEventListener('DOMContentLoaded', () => {
     window.game = new BorderBlindGame();
 });
+
