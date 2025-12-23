@@ -9,6 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css">
+    <!-- Google AdSense -->
+    <!-- TODO: Replace ca-pub-XXXXXXXXXXXXXXXX with your actual AdSense publisher ID -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+     crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="game-container">
@@ -53,16 +57,46 @@
                 </div>
             </header>
 
-            <main class="game-main">
-                <div class="map-container" id="map-container">
-                    <div id="map"></div>
-                    <div class="loading-overlay" id="loading-overlay">
-                        <div class="loader"></div>
-                        <p>Loading map...</p>
+            <div class="game-content-wrapper">
+                <!-- Left Ad Container -->
+                <!-- TODO: Replace ca-pub-XXXXXXXXXXXXXXXX and XXXXXXXXXX with your actual AdSense publisher ID and ad slot -->
+                <aside class="ad-container ad-left">
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                         data-ad-slot="XXXXXXXXXX"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true"></ins>
+                    <script>
+                         (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </aside>
+
+                <main class="game-main">
+                    <div class="map-container" id="map-container">
+                        <div id="map"></div>
+                        <div class="loading-overlay" id="loading-overlay">
+                            <div class="loader"></div>
+                            <p>Loading map...</p>
+                        </div>
                     </div>
-                </div>
-                <div class="hint-text" id="hint-text">Click on the country that's missing!</div>
-            </main>
+                    <div class="hint-text" id="hint-text">Click on the country that's missing!</div>
+                </main>
+
+                <!-- Right Ad Container -->
+                <!-- TODO: Replace ca-pub-XXXXXXXXXXXXXXXX and XXXXXXXXXX with your actual AdSense publisher ID and ad slot -->
+                <aside class="ad-container ad-right">
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                         data-ad-slot="XXXXXXXXXX"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true"></ins>
+                    <script>
+                         (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </aside>
+            </div>
 
             <div class="feedback-overlay" id="feedback-overlay">
                 <div class="feedback-content">

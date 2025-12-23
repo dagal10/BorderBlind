@@ -29,24 +29,47 @@ body {
     color: var(--text-primary);
     min-height: 100vh;
     overflow-x: hidden;
+    margin: 0;
+    padding: 0;
     background-image: 
         radial-gradient(ellipse at 20% 20%, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
         radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
         linear-gradient(180deg, var(--bg-deep) 0%, #0f1629 100%);
 }
 
+html {
+    overflow: hidden;
+    height: 100%;
+}
+
+body {
+    height: 100%;
+}
+
 /* Screen Management */
 .game-container {
     width: 100%;
-    min-height: 100vh;
+    height: 100vh;
     position: relative;
+    overflow: hidden;
 }
 
 .screen {
     display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     width: 100%;
-    min-height: 100vh;
+    height: 100%;
     padding: 2rem;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    visibility: hidden;
+    opacity: 0;
+    z-index: 0;
 }
 
 .screen.active {
@@ -54,6 +77,9 @@ body {
     flex-direction: column;
     align-items: center;
     animation: fadeIn 0.5s ease-out;
+    visibility: visible;
+    opacity: 1;
+    z-index: 10;
 }
 
 @keyframes fadeIn {
@@ -224,6 +250,13 @@ body {
 #game-screen {
     padding: 1rem;
     gap: 1rem;
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .game-header {
@@ -237,6 +270,47 @@ body {
     border: 1px solid var(--border-subtle);
     border-radius: 1rem;
     backdrop-filter: blur(10px);
+    margin: 0 auto;
+    flex-shrink: 0;
+}
+
+.game-content-wrapper {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    flex: 1;
+    min-height: 0;
+}
+
+/* Ad Containers */
+.ad-container {
+    flex-shrink: 0;
+    width: 160px;
+    min-height: 600px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 1rem;
+}
+
+.ad-container ins {
+    display: block;
+    width: 100%;
+}
+
+/* Hide ads on mobile and tablet */
+@media (max-width: 1200px) {
+    .ad-container {
+        display: none;
+    }
+    
+    .game-content-wrapper {
+        gap: 0;
+    }
 }
 
 .round-info, .score-info {
@@ -278,7 +352,10 @@ body {
     justify-content: center;
     width: 100%;
     max-width: 1200px;
+    min-width: 0; /* Prevents flex item from overflowing */
+    min-height: 0; /* Allows flex item to shrink */
     gap: 1rem;
+    overflow: hidden;
 }
 
 .map-container {
@@ -292,7 +369,7 @@ body {
     border-radius: 1.5rem;
     position: relative;
     overflow: hidden;
-    min-height: 450px;
+    min-height: 0;
 }
 
 #map {
@@ -451,6 +528,7 @@ body {
     background: var(--bg-card);
     border-radius: 100px;
     border: 1px solid var(--border-subtle);
+    flex-shrink: 0;
 }
 
 /* Feedback Overlay */
@@ -464,8 +542,9 @@ body {
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 2000;
+    z-index: 10000;
     animation: slideIn 0.4s ease-out;
+    pointer-events: none;
 }
 
 @keyframes slideIn {
@@ -485,6 +564,7 @@ body {
     border-radius: 1.5rem;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05);
     backdrop-filter: blur(10px);
+    pointer-events: auto;
 }
 
 .feedback-icon {
@@ -626,6 +706,12 @@ body {
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+    .game-content-wrapper {
+        flex-direction: column;
+    }
+}
+
 @media (max-width: 768px) {
     .game-header {
         flex-wrap: wrap;
