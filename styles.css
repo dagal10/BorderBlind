@@ -398,6 +398,13 @@ body {
     z-index: 200;
 }
 
+/* Ensure answer overlay layer is on top and interactive */
+[data-overlay-layer="true"] {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    z-index: 1000 !important;
+}
+
 /* Loading overlay */
 .loading-overlay {
     position: absolute;
@@ -730,4 +737,43 @@ body {
     50% {
         transform: scale(1.05);
     }
+}
+
+/* Correct answer green glowing pulsing border */
+.correct-answer-glow {
+    animation: correctAnswerPulse 1.5s ease-in-out infinite !important;
+    filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.8)) 
+            drop-shadow(0 0 16px rgba(34, 197, 94, 0.6))
+            drop-shadow(0 0 24px rgba(34, 197, 94, 0.4)) !important;
+}
+
+@keyframes correctAnswerPulse {
+    0%, 100% {
+        stroke-width: 5;
+        stroke-opacity: 1;
+    }
+    50% {
+        stroke-width: 7;
+        stroke-opacity: 0.8;
+    }
+}
+
+/* Mouse-following tooltip styling */
+.mouse-tooltip {
+    position: fixed;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+    z-index: 10000;
+    white-space: nowrap;
+    transform: translate(-50%, -100%);
+    margin-top: -10px;
 }

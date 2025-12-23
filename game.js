@@ -29,6 +29,10 @@ class BorderBlindGame {
         
         this.usedCombinations = new Set();
         
+        // Custom mouse-following tooltip
+        this.mouseTooltip = null;
+        this.currentTooltipText = null;
+        
         // DOM Elements
         this.screens = {
             start: document.getElementById('start-screen'),
@@ -57,7 +61,37 @@ class BorderBlindGame {
         this.overlayOpacity = 0.2;
         
         this.bindEvents();
+        this.createMouseTooltip();
         this.loadGeoJson();
+    }
+    
+    createMouseTooltip() {
+        // Create a custom tooltip element that follows the mouse
+        this.mouseTooltip = document.createElement('div');
+        this.mouseTooltip.className = 'mouse-tooltip';
+        this.mouseTooltip.style.display = 'none';
+        document.body.appendChild(this.mouseTooltip);
+    }
+    
+    updateTooltipPosition(e) {
+        if (!this.mouseTooltip || !this.currentTooltipText) return;
+        
+        // Position tooltip centered above mouse cursor
+        this.mouseTooltip.style.left = e.clientX + 'px';
+        this.mouseTooltip.style.top = e.clientY + 'px';
+    }
+    
+    showMouseTooltip(text) {
+        if (!this.mouseTooltip) return;
+        this.currentTooltipText = text;
+        this.mouseTooltip.textContent = text;
+        this.mouseTooltip.style.display = 'block';
+    }
+    
+    hideMouseTooltip() {
+        if (!this.mouseTooltip) return;
+        this.currentTooltipText = null;
+        this.mouseTooltip.style.display = 'none';
     }
     
     bindEvents() {
@@ -122,11 +156,33 @@ class BorderBlindGame {
         
         // Position zoom control in top-right
         this.map.zoomControl.setPosition('topright');
+        
+        // Track mouse movement on the map for tooltip positioning
+        this.map.on('mousemove', (e) => {
+            if (this.currentTooltipText && this.mouseTooltip) {
+                const containerPoint = this.map.mouseEventToContainerPoint(e.originalEvent);
+                const mapRect = this.map.getContainer().getBoundingClientRect();
+                const event = {
+                    clientX: containerPoint.x + mapRect.left,
+                    clientY: containerPoint.y + mapRect.top
+                };
+                this.updateTooltipPosition(event);
+            }
+        });
     }
     
     nextRound() {
         this.hideFeedback();
         this.clearCountryLabels();
+        
+        // Hide any visible tooltip
+        this.hideMouseTooltip();
+        
+        // Clean up correct answer highlight interval
+        if (this.correctAnswerHighlightInterval) {
+            clearInterval(this.correctAnswerHighlightInterval);
+            this.correctAnswerHighlightInterval = null;
+        }
         
         // Clean up opacity maintenance
         if (this.opacityMaintenanceInterval) {
@@ -388,8 +444,16 @@ class BorderBlindGame {
         
         // Add event handlers to each sub-layer
         layer.eachLayer(function(subLayer) {
+            // Store tooltip content
+            subLayer._tooltipContent = countryName;
+            
             subLayer.on('mouseover', function(e) {
-                if (self.hasGuessed) return;
+                // Only show tooltip on answer screen (after guessing)
+                if (self.hasGuessed) {
+                    self.showMouseTooltip(countryName);
+                    return;
+                }
+                // During guessing phase, just highlight the country
                 this.setStyle({
                     fillOpacity: 1,
                     weight: 3,
@@ -399,7 +463,12 @@ class BorderBlindGame {
             });
             
             subLayer.on('mouseout', function(e) {
-                if (self.hasGuessed) return;
+                // Hide tooltip if we're on answer screen
+                if (self.hasGuessed) {
+                    self.hideMouseTooltip();
+                    return;
+                }
+                // During guessing phase, restore normal style
                 this.setStyle({
                     fillOpacity: 0.8,
                     weight: 2,
@@ -447,8 +516,16 @@ class BorderBlindGame {
         
         // Add event handlers
         layer.eachLayer(function(subLayer) {
+            // Store tooltip content
+            subLayer._tooltipContent = self.absorbingCountry.name;
+            
             subLayer.on('mouseover', function(e) {
-                if (self.hasGuessed) return;
+                // Only show tooltip on answer screen (after guessing)
+                if (self.hasGuessed) {
+                    self.showMouseTooltip(self.absorbingCountry.name);
+                    return;
+                }
+                // During guessing phase, just highlight the country
                 this.setStyle({
                     fillOpacity: 1,
                     weight: 3,
@@ -458,7 +535,12 @@ class BorderBlindGame {
             });
             
             subLayer.on('mouseout', function(e) {
-                if (self.hasGuessed) return;
+                // Hide tooltip if we're on answer screen
+                if (self.hasGuessed) {
+                    self.hideMouseTooltip();
+                    return;
+                }
+                // During guessing phase, restore normal style
                 this.setStyle({
                     fillOpacity: 0.8,
                     weight: 2,
@@ -493,8 +575,16 @@ class BorderBlindGame {
         }).addTo(this.map);
         
         layer.eachLayer(function(subLayer) {
+            // Store tooltip content
+            subLayer._tooltipContent = self.absorbingCountry.name;
+            
             subLayer.on('mouseover', function(e) {
-                if (self.hasGuessed) return;
+                // Only show tooltip on answer screen (after guessing)
+                if (self.hasGuessed) {
+                    self.showMouseTooltip(self.absorbingCountry.name);
+                    return;
+                }
+                // During guessing phase, just highlight the country
                 this.setStyle({
                     fillOpacity: 1,
                     weight: 3,
@@ -504,7 +594,12 @@ class BorderBlindGame {
             });
             
             subLayer.on('mouseout', function(e) {
-                if (self.hasGuessed) return;
+                // Hide tooltip if we're on answer screen
+                if (self.hasGuessed) {
+                    self.hideMouseTooltip();
+                    return;
+                }
+                // During guessing phase, restore normal style
                 this.setStyle({
                     fillOpacity: 0.8,
                     weight: 0,
@@ -761,6 +856,9 @@ class BorderBlindGame {
         
         console.log('Guess made:', countryName, 'Is correct territory:', isAbsorbingTerritory);
         
+        // Enable tooltips for all countries now that we're on the answer screen
+        this.enableTooltips();
+        
         // The correct answer is clicking on the absorbing country's territory
         // (which includes the absorbed country's area)
         if (isAbsorbingTerritory) {
@@ -773,9 +871,17 @@ class BorderBlindGame {
         }
     }
     
+    enableTooltips() {
+        // Tooltips are now handled by the custom mouse-following tooltip system
+        // No need to bind Leaflet tooltips anymore
+    }
+    
     showCorrectFeedback() {
         // Show a green overlay on just the absorbed country to reveal the answer
         this.showAbsorbedCountryOverlay(true);
+        
+        // Highlight the correct answer (absorbing country) with green glowing pulsing border
+        this.highlightCorrectAnswer();
         
         this.elements.feedbackIcon.className = 'feedback-icon correct';
         this.elements.feedbackIcon.innerHTML = '✓';
@@ -793,6 +899,9 @@ class BorderBlindGame {
     showWrongFeedback(guessedCountry) {
         // Show a colored overlay on just the absorbed country to reveal the answer
         this.showAbsorbedCountryOverlay(false);
+        
+        // Highlight the correct answer (absorbing country) with green glowing pulsing border
+        this.highlightCorrectAnswer();
         
         this.elements.feedbackIcon.className = 'feedback-icon wrong';
         this.elements.feedbackIcon.innerHTML = '✗';
@@ -841,35 +950,185 @@ class BorderBlindGame {
         const overlayColor = isCorrect ? '#22c55e' : '#ec4899';
         
         // Create a filled overlay with the absorbed country's shape
+        const self = this;
         this.answerOutlineLayer = L.geoJSON(this.absorbedFeature, {
             style: {
                 fillColor: overlayColor,
                 fillOpacity: 0.2,
-                color: '#ffffff',
+                color: '#ef4444', // Red border
                 weight: 4,
                 opacity: 1
-            }
+            },
+            interactive: true  // Make sure it's interactive
         }).addTo(this.map);
         
-        this.answerOutlineLayer.bringToFront();
-        
-        // Mark overlay elements with a data attribute for easy finding
+        // Add hover effects and tooltips to the absorbed country overlay
         this.answerOutlineLayer.eachLayer(subLayer => {
+            // Store tooltip content (the missing country name)
+            subLayer._tooltipContent = this.missingCountry.name;
+            
+            // Make sure the sublayer is interactive and has proper styling
+            subLayer.setStyle({
+                fillColor: overlayColor,
+                fillOpacity: 0.2,
+                color: '#ef4444', // Red border
+                weight: 4,
+                opacity: 1
+            });
+            
+            // Ensure the path element is interactive
+            const path = subLayer._path || subLayer.getElement();
+            if (path) {
+                path.style.pointerEvents = 'auto';
+                path.style.cursor = 'pointer';
+            }
+            
+            // Add hover effects
+            subLayer.on('mouseover', function(e) {
+                // Show tooltip with the missing country name
+                self.showMouseTooltip(self.missingCountry.name);
+                
+                // Update tooltip position using map's mouse event conversion
+                if (e.originalEvent && self.map) {
+                    const containerPoint = self.map.mouseEventToContainerPoint(e.originalEvent);
+                    const mapRect = self.map.getContainer().getBoundingClientRect();
+                    const mouseEvent = {
+                        clientX: containerPoint.x + mapRect.left,
+                        clientY: containerPoint.y + mapRect.top
+                    };
+                    self.updateTooltipPosition(mouseEvent);
+                }
+                
+                // Highlight the overlay on hover
+                this.setStyle({
+                    fillOpacity: 0.4,
+                    weight: 5,
+                    color: '#ef4444' // Red border
+                });
+                this.bringToFront();
+            });
+            
+            subLayer.on('mousemove', function(e) {
+                // Update tooltip position as mouse moves
+                if (self.currentTooltipText === self.missingCountry.name && e.originalEvent && self.map) {
+                    const containerPoint = self.map.mouseEventToContainerPoint(e.originalEvent);
+                    const mapRect = self.map.getContainer().getBoundingClientRect();
+                    const mouseEvent = {
+                        clientX: containerPoint.x + mapRect.left,
+                        clientY: containerPoint.y + mapRect.top
+                    };
+                    self.updateTooltipPosition(mouseEvent);
+                }
+            });
+            
+            subLayer.on('mouseout', function(e) {
+                // Hide tooltip
+                self.hideMouseTooltip();
+                
+                // Restore original style
+                this.setStyle({
+                    fillOpacity: 0.2,
+                    weight: 4,
+                    color: '#ef4444' // Red border
+                });
+            });
+            
             const element = subLayer.getElement();
             if (element) {
                 element.setAttribute('data-overlay-layer', 'true');
+                element.setAttribute('data-country-name', self.missingCountry.name);
+                // Ensure pointer events are enabled
+                element.style.pointerEvents = 'auto';
+                element.style.cursor = 'pointer';
                 // Also mark child leaflet-interactive elements
                 const interactiveElements = element.classList.contains('leaflet-interactive') 
                     ? [element] 
                     : element.querySelectorAll('.leaflet-interactive');
                 interactiveElements.forEach(el => {
                     el.setAttribute('data-overlay-layer', 'true');
+                    el.setAttribute('data-country-name', self.missingCountry.name);
+                    el.style.pointerEvents = 'auto';
+                    el.style.cursor = 'pointer';
                 });
             }
         });
         
+        // Bring to front to ensure it's on top - do this after a short delay to ensure other layers are rendered
+        setTimeout(() => {
+            if (this.answerOutlineLayer) {
+                this.answerOutlineLayer.bringToFront();
+                // Also bring each sublayer to front
+                this.answerOutlineLayer.eachLayer(subLayer => {
+                    subLayer.bringToFront();
+                });
+            }
+        }, 100);
+        
         // Set up continuous opacity maintenance
         this.setupOpacityMaintenance();
+    }
+    
+    highlightCorrectAnswer() {
+        // Highlight the absorbing country (correct answer) with green glowing pulsing border
+        if (!this.absorbedLayer) return;
+        
+        // Apply green glowing pulsing border style to the absorbing country layer
+        this.absorbedLayer.eachLayer(subLayer => {
+            // Update the style with green border
+            subLayer.setStyle({
+                color: '#22c55e', // Green color
+                weight: 5,
+                opacity: 1,
+                fillOpacity: 0.8
+            });
+            
+            // No glow effect - just green border
+            const element = subLayer.getElement();
+            if (element) {
+                // Also apply to child paths (SVG paths)
+                const paths = element.querySelectorAll('path');
+                paths.forEach(path => {
+                    // Ensure stroke properties are set
+                    path.setAttribute('stroke', '#22c55e');
+                    path.setAttribute('stroke-width', '5');
+                    path.setAttribute('stroke-opacity', '1');
+                });
+            }
+            
+            // Also access the internal _path if available (Leaflet's internal reference)
+            if (subLayer._path) {
+                subLayer._path.setAttribute('stroke', '#22c55e');
+                subLayer._path.setAttribute('stroke-width', '5');
+            }
+        });
+        
+        // Bring to front to ensure visibility
+        this.absorbedLayer.bringToFront();
+        
+        // Set up a periodic check to maintain the highlight (in case Leaflet resets styles)
+        if (this.correctAnswerHighlightInterval) {
+            clearInterval(this.correctAnswerHighlightInterval);
+        }
+        this.correctAnswerHighlightInterval = setInterval(() => {
+            if (this.absorbedLayer && this.hasGuessed) {
+                this.absorbedLayer.eachLayer(subLayer => {
+                    const element = subLayer.getElement();
+                    if (element) {
+                        const paths = element.querySelectorAll('path');
+                        paths.forEach(path => {
+                            path.setAttribute('stroke', '#22c55e');
+                            path.setAttribute('stroke-width', '5');
+                        });
+                    }
+                    if (subLayer._path) {
+                        subLayer._path.setAttribute('stroke', '#22c55e');
+                        subLayer._path.setAttribute('stroke-width', '5');
+                    }
+                });
+            } else {
+                clearInterval(this.correctAnswerHighlightInterval);
+            }
+        }, 100);
     }
     
     setupOpacityMaintenance() {
@@ -899,6 +1158,7 @@ class BorderBlindGame {
         this.map.on('zoomend', this.mapMoveHandler);
         
         // Also use MutationObserver to watch for style changes on overlay elements
+        // BUT exclude elements that are currently being hovered (to preserve hover effects)
         if (this.map && this.map.getContainer) {
             const mapContainer = this.map.getContainer();
             this.opacityMutationObserver = new MutationObserver((mutations) => {
@@ -908,7 +1168,11 @@ class BorderBlindGame {
                         (mutation.attributeName === 'style' || mutation.attributeName === 'fill-opacity')) {
                         const target = mutation.target;
                         if (target.hasAttribute && target.hasAttribute('data-overlay-layer')) {
-                            shouldUpdate = true;
+                            // Don't update if this element is currently hovered (has higher opacity)
+                            const currentOpacity = target.style.fillOpacity || target.getAttribute('fill-opacity');
+                            if (!currentOpacity || parseFloat(currentOpacity) <= 0.3) {
+                                shouldUpdate = true;
+                            }
                         }
                     }
                 });
@@ -933,8 +1197,21 @@ class BorderBlindGame {
         }
         
         // Also set up a periodic check as a fallback (every 100ms)
+        // BUT preserve hover states
         this.opacityMaintenanceInterval = setInterval(() => {
             if (this.answerOutlineLayer && this.hasGuessed) {
+                // Only update opacity if not currently hovered
+                this.answerOutlineLayer.eachLayer(subLayer => {
+                    const element = subLayer._path || subLayer.getElement();
+                    if (element) {
+                        const currentOpacity = element.style.fillOpacity || element.getAttribute('fill-opacity');
+                        // Only reset if opacity is at base level (not hovered)
+                        if (!currentOpacity || parseFloat(currentOpacity) <= 0.3) {
+                            // Don't update during hover - let hover handler manage it
+                        }
+                    }
+                });
+                // Still update the base opacity for non-hovered elements
                 this.updateOverlayOpacity();
             }
         }, 100);
@@ -952,28 +1229,42 @@ class BorderBlindGame {
         });
         
         // Force Leaflet to re-apply styles on each sub-layer and access _path directly
+        // BUT preserve hover states (don't override if opacity is higher due to hover)
         let foundElements = 0;
         this.answerOutlineLayer.eachLayer(subLayer => {
-            subLayer.setStyle({
-                fillOpacity: this.overlayOpacity
-            });
-            
-            // Access Leaflet's internal _path element directly (most reliable)
-            if (subLayer._path) {
-                const path = subLayer._path;
-                path.setAttribute('fill-opacity', this.overlayOpacity);
-                path.style.setProperty('fill-opacity', this.overlayOpacity, 'important');
-                path.style.animation = 'none';
-                foundElements++;
+            // Check if currently hovered (has higher opacity)
+            const path = subLayer._path || subLayer.getElement();
+            let isHovered = false;
+            if (path) {
+                const currentOpacity = path.style.fillOpacity || path.getAttribute('fill-opacity');
+                if (currentOpacity && parseFloat(currentOpacity) > 0.3) {
+                    isHovered = true;
+                }
             }
             
-            // Also try _renderer if it exists
-            if (subLayer._renderer && subLayer._renderer._container) {
-                const paths = subLayer._renderer._container.querySelectorAll('path');
-                paths.forEach(p => {
-                    p.setAttribute('fill-opacity', this.overlayOpacity);
-                    p.style.setProperty('fill-opacity', this.overlayOpacity, 'important');
+            // Only update if not hovered
+            if (!isHovered) {
+                subLayer.setStyle({
+                    fillOpacity: this.overlayOpacity
                 });
+                
+                // Access Leaflet's internal _path element directly (most reliable)
+                if (subLayer._path) {
+                    const pathEl = subLayer._path;
+                    pathEl.setAttribute('fill-opacity', this.overlayOpacity);
+                    pathEl.style.setProperty('fill-opacity', this.overlayOpacity, 'important');
+                    pathEl.style.animation = 'none';
+                    foundElements++;
+                }
+                
+                // Also try _renderer if it exists
+                if (subLayer._renderer && subLayer._renderer._container) {
+                    const paths = subLayer._renderer._container.querySelectorAll('path');
+                    paths.forEach(p => {
+                        p.setAttribute('fill-opacity', this.overlayOpacity);
+                        p.style.setProperty('fill-opacity', this.overlayOpacity, 'important');
+                    });
+                }
             }
         });
         
@@ -982,24 +1273,30 @@ class BorderBlindGame {
             this.answerOutlineLayer.redraw();
         }
         
-        // Also find and update elements by data attribute
+        // Also find and update elements by data attribute (but preserve hover states)
         if (this.map && this.map.getContainer) {
             const mapContainer = this.map.getContainer();
             const overlayPaths = mapContainer.querySelectorAll('.leaflet-interactive[data-overlay-layer="true"]');
             
             overlayPaths.forEach(el => {
-                // Remove any animation
-                el.style.animation = 'none';
-                el.style.setProperty('animation', 'none', 'important');
+                // Check if hovered
+                const currentOpacity = el.style.fillOpacity || el.getAttribute('fill-opacity');
+                const isHovered = currentOpacity && parseFloat(currentOpacity) > 0.3;
                 
-                // Set fill-opacity with important flag
-                el.setAttribute('fill-opacity', this.overlayOpacity);
-                el.style.setProperty('fill-opacity', this.overlayOpacity, 'important');
-                
-                // Also try setting opacity (some SVG renderers use this)
-                el.style.setProperty('opacity', '1', 'important'); // Keep opacity at 1, use fill-opacity for transparency
-                
-                foundElements++;
+                if (!isHovered) {
+                    // Remove any animation
+                    el.style.animation = 'none';
+                    el.style.setProperty('animation', 'none', 'important');
+                    
+                    // Set fill-opacity with important flag
+                    el.setAttribute('fill-opacity', this.overlayOpacity);
+                    el.style.setProperty('fill-opacity', this.overlayOpacity, 'important');
+                    
+                    // Also try setting opacity (some SVG renderers use this)
+                    el.style.setProperty('opacity', '1', 'important'); // Keep opacity at 1, use fill-opacity for transparency
+                    
+                    foundElements++;
+                }
             });
         }
     }
